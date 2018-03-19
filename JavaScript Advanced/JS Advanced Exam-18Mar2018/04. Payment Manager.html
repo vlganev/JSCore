@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Manager</title>
+    <style>
+        body{padding:30px}div{margin-bottom:20px}table{border:1px solid #000;border-collapse:collapse;margin:auto}caption{font-size:20px;font-weight:700;color:#fff;background:#000;padding:5px}td,th{padding:5px 20px;text-align:center}tfoot td,th{background:#ccc}tr:nth-child(odd){background:#eee}tr:nth-child(even){background:#ddd}tfoot{border-top:1px solid #000}tfoot>tr td{font-style:italic;font-weight:700}button{margin:auto;cursor:pointer}
+    </style>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+
+<div id="amazon"></div>
+
+<div id="ebay"></div>
+
+<div id="walmart"></div>
+
+
+<script>
+    class PaymentManager {
+        constructor(title) {
+            this.title = title;
+            this._element = '';
+            this._createElement();
+        }
+
+        _createElement() {
+            let table = $('<table>');
+            let caption = $('<caption>').text(`${this.title} Payment Manager`)
+            let thead =
+                $('<thead>')
+                    .append($('<tr>')
+                        .append($('<th>')
+                            .addClass('name')
+                            .text('Name'))
+                        .append($('<th>')
+                            .addClass('category')
+                            .text('Category'))
+                        .append($('<th>')
+                            .addClass('price')
+                            .text('Price'))
+                        .append($('<th>')
+                            .text('Actions')))
+            let tbody = $('<tbody>').addClass('payments');
+            let tfoot =
+                $('<tfoot>')
+                    .addClass('input-data')
+                    .append($('<tr>')
+                        .append($('<td>')
+                            .append($('<input name="name" type="text">')))
+                        .append($('<td>')
+                            .append($('<input name="category" type="text">')))
+                        .append($('<td>')
+                            .append($('<input name="price" type="number">')))
+                        .append($('<td>')
+                            .append($('<button>Add</button>')).on('click', this._addFunc.bind(this))));
+            this._element = table.append(caption).append(thead).append(tbody).append(tfoot);
+        }
+
+        _addFunc(e) {
+            let name = $("input[name='name']", this._element);
+            let category = $("input[name='category']", this._element);
+            let price = $("input[name='price']", this._element);
+            if ($(name).val() !== '' && $(category).val() !== '' && $(price).val() !== '') {
+                let priceVal = Number(price.val());
+                $('tbody', this._element)
+                    .append($('<tr>')
+                        .append($('<td>')
+                            .text(name.val()))
+                        .append($('<td>')
+                            .text(category.val()))
+                        .append($('<td>')
+                            .text(priceVal))
+                        .append($('<td>')
+                            .html($('<button>Delete</button>').on('click', this._deleteFunc.bind(this)))));
+                $(name).val('');
+                $(category).val('');
+                $(price).val('');
+            }
+        }
+
+        _deleteFunc(e) {
+            $(e.target).parent().parent().remove();
+        }
+
+        render(id) {
+            $(`#${id}`).append(this._element);
+        }
+    }
+
+
+    $(function() {
+        let paymentMangersData = [
+            ['amazon', 'Amazon'],
+            ['ebay', 'eBay'],
+            ['walmart', 'Walmart'],
+            // Others
+        ]
+
+        for (let [target, title] of paymentMangersData) {
+            let paymentManager = new PaymentManager(title)
+            paymentManager.render(target)
+        }
+    })
+</script>
+</body>
+</html>
