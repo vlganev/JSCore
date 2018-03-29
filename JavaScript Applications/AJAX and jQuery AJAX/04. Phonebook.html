@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phonebook</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<h1>Phonebook</h1>
+<ul id="phonebook"></ul>
+<button id="btnLoad">Load</button>
+<h2>Create Contact</h2>
+Person: <input type="text" id="person" />
+<br>
+Phone: <input type="text" id="phone" />
+<br>
+<button id="btnCreate">Create</button>
+<script>
+    const URL = 'https://phonebook-5710d.firebaseio.com/phonebook';
+    $('#btnLoad').on('click', loadData);
+    $('#btnCreate').on('click', postData);
+    
+    function loadData() {
+        $('#phonebook').empty();
+        $.ajax({
+            method: 'GET',
+            url: URL + '.json'
+        }).then(handleSuccess)
+            .catch(handleError);
+
+        function handleSuccess(res) {
+            for (let key in res) {
+                generateLi(res[key].name, res[key].phone, key);
+            }
+        }
+    }
+
+    function postData() {
+        let name = $('#person').val();
+        let phone = $('#phone').val();
+        let postData = JSON.stringify({name, phone});
+
+        $.ajax({
+            method: 'POST',
+            url: URL + '.json',
+            data: postData,
+            success: appendElement,
+            error: handleError
+        });
+
+        function appendElement(res) {
+            generateLi(name, phone, res.name);
+            name = $('#person').val('');
+            phone = $('#phone').val('');
+        }
+    }
+
+    function generateLi(name, phone, key) {
+        let li = $(`<li>${name}: ${phone} </li>`)
+            .append($('<a hre="#">[Delete]</a>')
+                .click(function () {
+                    $.ajax({
+                        method: 'DELETE',
+                        url: URL + '/' + key + '.json'
+                    }).then(function () {
+                        $(li).remove()
+                    })
+                        .catch(handleError);
+                }));
+        $('#phonebook').append(li);
+    }
+
+    function handleError(err) {
+        $('#phonebook')
+            .append('<li>Error</li>');
+    }
+</script>
+</body>
+</html>
