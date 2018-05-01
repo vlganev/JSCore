@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Blog</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<h1>All Posts</h1>
+<button id="btnLoadPosts">Load Posts</button>
+<select id="posts"></select>
+<button id="btnViewPost">View</button>
+<h1 id="post-title">Post Details</h1>
+<ul id="post-body"></ul>
+<h2>Comments</h2>
+<ul id="post-comments"></ul>
+<script>
+    attachEvents();
+    function attachEvents() {
+        const URL = 'https://baas.kinvey.com/appdata/kid_SystYyEqf/';
+        const USERNAME = 'blog';
+        const PASSWORD = 'blog';
+        const BASE_64 = btoa(USERNAME + ':' + PASSWORD);
+        const AUTH = {'Authorization': 'Basic ' + BASE_64};
+
+        let posts = {};
+
+        $('#btnLoadPosts').on('click', loadPosts);
+        $('#btnViewPost').on('click', loadComments);
+        
+        function loadPosts() {
+            $('#posts').empty();
+            $.ajax({
+                url: URL + 'posts',
+                headers: AUTH
+            }).then(function (res) {
+                for (let post of res) {
+                    $('#posts')
+                        .append($(`<option value="${post._id}">${post.title}</option>`));
+                    posts[post._id] = post.body;
+                }
+            }).catch(function (err) {
+                console.log(err);
+            })
+        }
+        
+        function loadComments() {
+            $('#post-comments').empty();
+            let postId = $('#posts').val();
+            let postTitle = $('#posts').find('option:selected').text();
+
+            $('#post-title').text(postTitle);
+            $('#post-body').text(posts[postId]);
+            $.ajax({
+                url: URL + `comments/?query={"post_id":"${postId}"}`,
+                headers: AUTH
+            }).then(function (res) {
+                for (let comment of res) {
+                    $('#post-comments')
+                        .append($(`<li>${comment.text}</li>`));
+                }
+            }).catch(function (err) {
+                console.log(err);
+            })
+        }
+    }
+</script>
+</body>
+</html>
